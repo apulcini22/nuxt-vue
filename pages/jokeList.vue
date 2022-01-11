@@ -3,24 +3,27 @@
    <h1>This is the single page dad jokes</h1> 
   <ul>
     <li><nuxt-link to="/">Home</nuxt-link></li>
-    <li><nuxt-link to="/jokeList">Joke List</nuxt-link></li>
+    <li><nuxt-link to="/singleJoke">Single Joke</nuxt-link></li>
   </ul>
-    <section v-if="error.didError">
+    <section v-if="didError">
       <p>We're sorry, we're not able to retrieve this information at the moment, please try back later</p>
     </section>
 
   <section v-else>
     <div v-if="loading">Loading...</div>
-
-    <div v-if="results">
-      <br/>
+    <div v-if="jokes.length">
       <hr/>
       <div>Api results below:</div>
       <br/>
-      <div>ID: {{results.id}}</div>
-      <div>Joke: {{results.joke}}</div>
-    </div>
-  
+      <ol>
+        <li v-for="joke in jokes" v-bind:key="joke.id">
+          <ul>
+            <li>ID: {{joke.id}}</li>
+            <li>Joke: {{joke.joke}}</li>
+          </ul>
+        </li>
+      </ol>
+    </div> 
   </section>
 </div>
 </template>
@@ -28,15 +31,12 @@
 <script>
 import axios from 'axios';
 export default {
-  name: 'SingleJokePage',
+  name: 'listOfJokes',
   data() {
     return {
-      results: null,
+      jokes: [],
       loading: true,
-      error: {
-        didError: false,
-        errorMsg: null
-      },
+      didError: false
     }
   },
   mounted() {
@@ -45,13 +45,11 @@ export default {
           Accept: 'application/json',
         }
       }
-      const res = axios.get('https://icanhazdadjoke.com/', config)
-        .then(res => this.results = res.data)
+      const res = axios.get('https://icanhazdadjoke.com/search', config)
+        .then(res => this.jokes = res?.data?.results)
         .catch(error => {
           console.log('error: ', error);
           this.didError = true;
-          this.error.didError = true;
-          this.error.errorMsg = error.message;
         })
         .finally(() => this.loading=false);
     }
